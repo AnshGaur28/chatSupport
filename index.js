@@ -119,8 +119,9 @@ io.on("connection", (socket) => {
         io.to(adminSID).emit("transferRequest" , clientSID);
     })
     socket.on('disconnect' , async()=>{
-        await userModel.findOneAndUpdate({SID} , {$unset : {SID : 1}});
-        await adminModel.findOneAndUpdate({SID} , {$unset : {SID : 1}});
+        console.log("Disconnecting.....")
+        await userModel.findOneAndUpdate({SID : socket.id} , {$unset : {SID : 1}});
+        await adminModel.findOneAndUpdate({SID : socket.id} , {$unset : {SID : 1}});
     })
 });
 
