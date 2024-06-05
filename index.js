@@ -118,6 +118,10 @@ io.on("connection", (socket) => {
         const {clientSID , adminSID} = data ;
         io.to(adminSID).emit("transferRequest" , clientSID);
     })
+    socket.on('disconnect' , async()=>{
+        await userModel.findOneAndUpdate({SID} , {$unset : {SID : 1}});
+        await adminModel.findOneAndUpdate({SID} , {$unset : {SID : 1}});
+    })
 });
 
 server.listen(3000, async () => {
