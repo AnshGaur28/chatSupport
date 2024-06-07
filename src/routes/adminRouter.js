@@ -6,5 +6,5 @@ adminRouter.get('/getClients' , getAllClient);
 adminRouter.get('/getRoomHistory' , getRoomHistory);
 adminRouter.get('/getAdmins' , getAdmins);
 adminRouter.get('/getClientWithSID' , getClientWithSID );
-adminRouter.get('/createSession' , createSession );
+adminRouter.post('/createSession' , createSession );
 module.exports = adminRouter ;
