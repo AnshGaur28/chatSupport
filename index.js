@@ -69,16 +69,21 @@ io.on("connection", (socket) => {
         const role = "client"
         const {userData, message , time} = data ;
         const userInfo = JSON.parse(userData);
-        // const userId = userInfo.userId;
-        const userId = "66557cf3c26a36e3364348d2";
-        
+        const userId = userInfo.userId;
         const email = userInfo.email;
+        const sessionId = userInfo.sessionId;
         const messageObj =  {userId : userId, email : email , role : role , message: data.message , time : time} ;
         console.log(messageObj);
         io.to(`room_${socket.id}`).emit("message" , messageObj );
-        await sessionModel.findOneAndUpdate({user_id : userId} , { $set: { "client_chat_history.message": message, "client_chat_history.role": role, "client_chat_history.time": time }}, { new: true, useFindAndModify: false });
-        await userModel.findOneAndUpdate({email : email} , {$set:  {SID : socket.id }} ,{ new: true, useFindAndModify: false });
+        await sessionModel.findOneAndUpdate(
+            { _id : sessionId },
+            { 
+                $push: { "client_chat_history": { message: message, role: role, time: time } }
+            },
+            { new: true }
+        );
         console.log("Inserted Message");
+        await userModel.findOneAndUpdate({email : email} , {$set:  {SID : socket.id , activeSession : sessionId }} ,{ new: true, useFindAndModify: false });
     });
 
     socket.on('disconnect', async () => {
@@ -101,11 +106,17 @@ io.on("connection", (socket) => {
 
     socket.on("adminMessage" , async (data)=>{
         const {message , time , roomId , userId} = data ;
+        const sessionId = await userModel.findOne({_id : userId}).select('activeSession');
         const role = "admin" ;
         console.log("admin Message "  ,data);
         const messageObj = {message : message , time: time , role : role};
         io.to(roomId).emit("message" , messageObj );
-        await sessionModel.findOneAndUpdate({user_id : userId} , { $set: { "client_chat_history.message": message, "client_chat_history.role": role, "client_chat_history.time": time }}, { new: true, useFindAndModify: false });
+        await sessionModel.findOneAndUpdate({_id: sessionId }, 
+            { 
+                $push: { "client_chat_history": { message: message, role: role, time: time } }
+            },
+            { new: true }
+        );
     });
 
     socket.on("updateAdmin" , async(data)=>{
@@ -125,8 +136,7 @@ io.on("connection", (socket) => {
     })
 });
 
+
 server.listen(3000, async () => {
     console.log(`Server running on port ${3000}`);
 });
-
-

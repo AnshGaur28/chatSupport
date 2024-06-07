@@ -17,18 +17,17 @@ const sessionSchema = new mongoose.Schema({
     
     }],
 
-    // client_chat_history : [{
-    //     message : { 
-    //         type : String ,
-    //     },
-    //     role : {
-    //         type : String ,
-    //     },
-    //     timeStamp : {
-    //         type : String,
-    //     }
-
-    // }],
+    client_chat_history : [{
+        message : { 
+            type : String ,
+        },
+        role : {
+            type : String ,
+        },
+        time : {
+            type : String,
+        }
+    }],
 
     created_at: {
         type: Date,

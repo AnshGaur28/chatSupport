@@ -1,10 +1,11 @@
 const User = require("../models/user.model.js");
 const adminModel = require("../models/admin.model.js");
+const sessionModel = require("../models/session.model.js");
 const getAllClient = async (req, res) => {
   try {
     const clients = await User.find({
       SID: { $exists: true },
-    }).select("SID name closed");
+    }).select("SID name closed activeSession");
     // console.log(clients);
     return res.status(200).send({ clients });
   } catch (error) {
@@ -17,11 +18,11 @@ const getRoomHistory = async (req, res) => {
   try {
     const roomId = req.query.clientSID ;
     console.log(clientSID);
-    const clientData = await User.findOne(
-      { SID :clientSID},
-      "messages , username"
+    const clientData = await sessionModel.findOne(
+      { _id : sessionId},
+      "client_chat_history , username"
     );
-    return res.status(200).send({username : clientData.username , historyMessages : clientData.messages , role : "client"});
+    return res.status(200).send({username : clientData.username , historyMessages : clientData.client_chat_history , role : "client"});
   } catch (error) {
     console.log(error.message);
     return res.status(500).send({ message: " Internal Servver Error" });
@@ -49,4 +50,18 @@ const getAdmins = async(req, res)=>{
   }
 }
 
-module.exports = { getAllClient, getRoomHistory , getAdmins  , getClientWithSID};
+const createSession = async(req, res)=>{
+  try {
+      const { user_id, flag } = req.body ;
+      console.log("---------payload" , { user_id, flag }) ;
+      const newSession = new sessionModel({
+        user_id : user_id ,
+        flag : flag ,
+        client_chat_history : [],
+      });
+      return res.status(200).send(newSession);
+  } catch (error) {
+      res.status(500).send({"Error" : error.message });
+  }
+}
+module.exports = { getAllClient, getRoomHistory , getAdmins  , getClientWithSID , createSession};

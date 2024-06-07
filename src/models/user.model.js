@@ -55,6 +55,9 @@ const userSchema = new mongoose.Schema({
     closed : {
         type : Boolean ,
         default : false ,
+    },
+    activeSession : {
+        type : String ,
     }
     // orderList: [{
     //     type: mongoose.Schema.Types.ObjectId,
