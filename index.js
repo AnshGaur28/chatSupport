@@ -68,12 +68,11 @@ io.on("connection", (socket) => {
     socket.on("clientMessage" , async (data)=>{``
         const role = "client"
         const {userData, message , time} = data ;
-        const userInfo = JSON.parse(userData);
-        const userId = userInfo.userId;
-        const email = userInfo.email;
-        const sessionId = userInfo.sessionId;
+        const userId = userData.userId;
+        const email = userData.email;
+        const sessionId = userData.sessionId;
         const messageObj =  {userId : userId, email : email , role : role , message: data.message , time : time} ;
-        console.log(messageObj);
+        console.log(messageObj , sessionId);
         io.to(`room_${socket.id}`).emit("message" , messageObj );
         await sessionModel.findOneAndUpdate(
             { _id : sessionId },
@@ -105,12 +104,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("adminMessage" , async (data)=>{
-        const {message , time , roomId , userId} = data ;
-        const sessionId = await userModel.findOne({_id : userId}).select('activeSession');
+        const {message , time , userSID } = data ;
+        const user = await userModel.findOne({SID : userSID}).select('activeSession');
         const role = "admin" ;
         console.log("admin Message "  ,data);
         const messageObj = {message : message , time: time , role : role};
-        io.to(roomId).emit("message" , messageObj );
+        const sessionId = user.activeSession ;
+        console.log(user.activeSession);
+        io.to(`room_${userSID}`).emit("message" , messageObj );
         await sessionModel.findOneAndUpdate({_id: sessionId }, 
             { 
                 $push: { "client_chat_history": { message: message, role: role, time: time } }
@@ -137,6 +138,6 @@ io.on("connection", (socket) => {
 });
 
 
-server.listen(3000, async () => {
-    console.log(`Server running on port ${3000}`);
+server.listen(3001, async () => {
+    console.log(`Server running on port ${3001}`);
 });

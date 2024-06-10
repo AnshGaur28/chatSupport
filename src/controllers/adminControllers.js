@@ -16,8 +16,8 @@ const getAllClient = async (req, res) => {
  
 const getRoomHistory = async (req, res) => {
   try {
-    const roomId = req.query.clientSID ;
-    console.log(clientSID);
+    const sessionId = req.query.sessionId ;
+    console.log(sessionId);
     const clientData = await sessionModel.findOne(
       { _id : sessionId},
       "client_chat_history , username"
@@ -53,14 +53,17 @@ const getAdmins = async(req, res)=>{
 const createSession = async(req, res)=>{
   try {
       const { user_id, flag } = req.body ;
-      console.log("---------payload" , { user_id, flag }) ;
+      console.log("---------payload" , req.body) ;
       const newSession = new sessionModel({
         user_id : user_id ,
-        flag : flag ,
+        flag : flag || "",
         client_chat_history : [],
       });
+      await newSession.save();
+      console.log(newSession);
       return res.status(200).send(newSession);
   } catch (error) {
+      console.log(error.message)
       res.status(500).send({"Error" : error.message });
   }
 }
